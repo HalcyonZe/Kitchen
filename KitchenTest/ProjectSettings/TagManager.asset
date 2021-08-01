@@ -3,24 +3,25 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Knife
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
   - 
-  - 
+  - Ground
   - PostProcessing
   - Not in Reflection
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Foods
+  - Tools
+  - Plane
+  - CutFoods
+  - Plate
+  - Cutting board
   - 
   - 
   - 
