@@ -14,6 +14,58 @@ public class BasicObj : MonoBehaviour
         MC = GameObject.Find("Main Camera").GetComponent<MouseControl>();
     }
 
+    public void ObjPick()
+    {
+        PickObjs();
+        /*switch (LayerMask.LayerToName(this.gameObject.layer))
+        {
+            case "Foods":
+                PickObjs();
+                break;
+            case "Tools":
+                PickObjs();
+                break;
+            case "Plate":
+                PickObjs();
+                break;
+            case "CutFoods":
+                PickObjs();
+                break;
+        }*/
+    }
+
+    public void ObjFunction(GameObject obj)
+    {
+        switch (LayerMask.LayerToName(obj.layer)) 
+        {
+            case "Plane":
+                obj.GetComponent<BasicObj>().PutObjs();
+                break;
+            case "Plate":
+                if (MC.GetState() == MouseControl.State.HasPan)
+                {
+                    SendObjs(obj);
+                }
+                else
+                {
+                    obj.GetComponent<BasicObj>().PutObjs();
+                }
+                break;
+            case "UsefulPlane":
+                obj.GetComponent<BasicObj>().PutObjs();
+                break;
+            case "Foods":
+                UseTools(obj);
+                break;
+            case "CutFoods":
+                UseTools(obj);
+                break;
+            case "ResultPlane":
+                obj.GetComponent<BasicObj>().PutObjs();
+                break;
+        }
+    }
+
     public void UseObjs(MouseControl.State state)
     {
         switch (state)
@@ -74,5 +126,8 @@ public class BasicObj : MonoBehaviour
             });
     }
 
+    public virtual void SendObjs(GameObject Obj)
+    {
 
+    }
 }

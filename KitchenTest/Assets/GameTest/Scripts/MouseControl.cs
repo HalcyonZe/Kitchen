@@ -20,6 +20,7 @@ public class MouseControl : MonoBehaviour
         HasFoods,
         HasPlate,
         HasTools,
+        HasPan,
     }
     [SerializeField]
     private State state = State.Nothing;
@@ -53,20 +54,28 @@ public class MouseControl : MonoBehaviour
         switch (state)
         {
             case State.Nothing:
-                LayerMask layer1 = 1 << 10 | 1 << 11 | 1 << 13 | 1 << 14;
+                LayerMask layer1 = LayerMask.GetMask("Foods") | LayerMask.GetMask("Tools") |
+                                   LayerMask.GetMask("CutFoods") | LayerMask.GetMask("Plate");
                 ClickAction(layer1);
                 break;
             case State.HasFoods:
-                LayerMask layer2 = 1 << 12 | 1 << 15 | 1 << 14;
+                LayerMask layer2 = LayerMask.GetMask("Plane") | LayerMask.GetMask("UsefulPlane") |
+                                   LayerMask.GetMask("Plate");
                 ClickAction(layer2);
                 break;
             case State.HasPlate:
-                LayerMask layer3 = 1 << 10 | 1 << 12 | 1 << 13;
+                LayerMask layer3 = LayerMask.GetMask("Foods") | LayerMask.GetMask("Plane") | 
+                                   LayerMask.GetMask("CutFoods")| LayerMask.GetMask("ResultPlane");
                 ClickAction(layer3);
                 break;
             case State.HasTools:
-                LayerMask layer4 = 1 << 13 | 1 << 12;
+                LayerMask layer4 = LayerMask.GetMask("CutFoods") | LayerMask.GetMask("Plane");
                 ClickAction(layer4);
+                break;
+            case State.HasPan:
+                LayerMask layer5 = LayerMask.GetMask("Foods") | LayerMask.GetMask("Plane") |
+                                   LayerMask.GetMask("CutFoods") | LayerMask.GetMask("Plate");
+                ClickAction(layer5);
                 break;
 
         }
@@ -87,19 +96,18 @@ public class MouseControl : MonoBehaviour
 
             if (Input.GetMouseButtonUp(0))
             {
-
                 GameObject gameObj = hitInfo.collider.gameObject;
-                //½»»¥º¯Êý
-                //interactive(gameObj);
-                /*if (state == State.HasPlate|| state == State.HasTools)
+
+                if (PickObj == null)
                 {
-                    PickObj.GetComponent<BasicObj>().UseTools(gameObj);
+                    gameObj.GetComponent<BasicObj>().ObjPick();
                 }
                 else
-                {*/
-                    gameObj.GetComponent<BasicObj>().UseObjs(state);
-                //}
-                
+                {
+                    
+                    PickObj.GetComponent<BasicObj>().ObjFunction(gameObj);
+                }
+                //gameObj.GetComponent<BasicObj>().UseObjs(state);
                 MIcon.ToPoint();
             }
 
@@ -109,7 +117,7 @@ public class MouseControl : MonoBehaviour
             MIcon.ToPoint();
         }
     }
-    
+
     public State GetState()
     {
         return state;

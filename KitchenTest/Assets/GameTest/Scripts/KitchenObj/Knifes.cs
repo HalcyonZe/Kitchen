@@ -9,14 +9,7 @@ public class Knifes : BasicObj
     public Material matCross;
     private bool UseMouse = false;
     private float knifeY;
-    //相机原位
-    private Vector3 CameraPos, CameraRot;
-    private Transform MainCamera;
 
-    private void Awake()
-    {
-        MainCamera = GameObject.Find("Main Camera").transform;
-    }
     private void Update()
     {
         if (UseMouse)
@@ -27,7 +20,13 @@ public class Knifes : BasicObj
     }
     public override void PickObjs()
     {
-        base.PickObjs();
+        this.GetComponent<Rigidbody>().isKinematic = true;
+        this.GetComponent<Collider>().enabled = false;
+        this.transform.DOMove(MC.transform.GetChild(0).position, 0.1f).
+                        OnComplete(() => {  
+                            MC.PickObj = this.gameObject;
+                            this.transform.parent = MC.transform;                            
+                        });
         this.transform.DOLocalRotate(new Vector3(0, -90, 0), 0.1f);
         MC.ChangeState(MouseControl.State.HasTools);
     }
@@ -36,7 +35,7 @@ public class Knifes : BasicObj
     {
         MC.PickObj.transform.parent = null;
         MC.PickObj = null;
-        //MC.CanClick = false;
+
         GameController.Instance.PlayerPause();
 
         this.GetComponent<Collider>().enabled = false;
@@ -47,14 +46,15 @@ public class Knifes : BasicObj
             OnComplete(() => {
                 Ray ray = new Ray(transform.position, -transform.up);
                 RaycastHit hit;
-                if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerMask.GetMask("Cutting board")))
+                if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerMask.GetMask("UsefulPlane")))
                 {
-                    CameraPos = MainCamera.position;
-                    CameraRot = MainCamera.eulerAngles;
+                    CameraController.Instance.GetCamera();
 
                     Transform T = hit.collider.transform.GetChild(1).transform;
-                    MainCamera.DOMove(T.position, 0.3f);
-                    MainCamera.DORotate(T.eulerAngles, 0.3f);
+
+                    CameraController.Instance.transform.DOMove(T.position, 0.3f);
+                    CameraController.Instance.transform.DORotate(T.eulerAngles, 0.3f);
+
                     Cursor.lockState = CursorLockMode.None;
 
                     UseMouse = true;
@@ -64,6 +64,8 @@ public class Knifes : BasicObj
 
     private void ObjSlice()
     {
+        this.transform.GetChild(0).gameObject.SetActive(true);
+
         //鼠标移动
         Vector3 screenPos = Camera.main.WorldToScreenPoint(this.transform.position);
         Vector3 mousePos = Input.mousePosition;
@@ -71,11 +73,21 @@ public class Knifes : BasicObj
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
         //transform.position = worldPos;
         transform.position = new Vector3(worldPos.x, knifeY, worldPos.z);
-       
+
+        //旋转
+        if (Input.GetKey(KeyCode.A))
+        {
+            transform.Rotate(Vector3.up, -1.0f);
+        }
+        if (Input.GetKey(KeyCode.D))
+        {
+            transform.Rotate(Vector3.up, 1.0f);
+        }
+
         //切割代码
         Ray ray = new Ray(transform.position, -transform.up);
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerMask.GetMask("Cutting board")))
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerMask.GetMask("UsefulPlane")))
         {
             if (Input.GetMouseButtonDown(0))
             {
@@ -86,7 +98,14 @@ public class Knifes : BasicObj
                     Collider[] colliders = Physics.OverlapBox(transform.position, new Vector3(0.1f, 0.05f, 0.005f), transform.rotation, LayerMask.GetMask("CutFoods"));
                     foreach (Collider c in colliders)
                     {
+                        FoodItem foodItem = c.GetComponent<Foods>().m_foodItem;
                         Destroy(c.gameObject);
+                        //Debug.Log(foodItem.handleScoreDic.Count);
+                        if (!foodItem.handleScoreDic.ContainsKey("cut"))
+                        {
+                            foodItem.handleScoreDic.Add("cut", 5);
+                        }
+                        
                         SlicedHull hull = c.gameObject.Slice(transform.position, transform.forward);
                         if (hull != null)
                         {
@@ -98,7 +117,7 @@ public class Knifes : BasicObj
                                 obj.AddComponent<Rigidbody>();
                                 obj.GetComponent<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.Continuous;
                                 obj.AddComponent<MeshCollider>().convex = true;
-                                obj.AddComponent<Foods>();
+                                obj.AddComponent<Foods>().foodInit(foodItem);
                                 obj.layer = 13;
                             }
                         }
@@ -117,9 +136,7 @@ public class Knifes : BasicObj
         if (Input.GetMouseButtonDown(1) && UseMouse)
         {
             UseMouse = false;
-
-            MainCamera.DOMove(CameraPos, 0.3f);
-            MainCamera.DORotate(CameraRot, 0.3f);
+            this.transform.GetChild(0).gameObject.SetActive(false);
             Cursor.lockState = CursorLockMode.Locked;
 
             PickObjs();

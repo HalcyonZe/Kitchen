@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections;
-
+//[ExecuteInEditMode]
 public class AnimatedTextureUVs : MonoBehaviour 
 {
 	public int _uvTieX = 1;
@@ -11,11 +11,11 @@ public class AnimatedTextureUVs : MonoBehaviour
 	private Renderer _myRenderer;
 	private int _lastIndex = -1;
 
-	void Start () 
+	void Start()
 	{
-		_size = new Vector2 (1.0f / _uvTieX , 1.0f / _uvTieY);
+		_size = new Vector2(1.0f / _uvTieX, 1.0f / _uvTieY);
 		_myRenderer = GetComponent<Renderer>();
-		if(_myRenderer == null)
+		if (_myRenderer == null)
 			enabled = false;
 	}
 	// Update is called once per frame
@@ -23,7 +23,7 @@ public class AnimatedTextureUVs : MonoBehaviour
 	{
 		// Calculate index
 		int index = (int)(Time.timeSinceLevelLoad * _fps) % (_uvTieX * _uvTieY);
-		if(index != _lastIndex)
+		if (index != _lastIndex)
 		{
 			// split into horizontal and vertical index
 			int uIndex = index % _uvTieX;
@@ -31,10 +31,10 @@ public class AnimatedTextureUVs : MonoBehaviour
 
 			// build offset
 			// v coordinate is the bottom of the image in opengl so we need to invert.
-			Vector2 offset = new Vector2 (uIndex * _size.x, 1.0f - _size.y - vIndex * _size.y);
+			Vector2 offset = new Vector2(uIndex * _size.x, 1.0f - _size.y - vIndex * _size.y);
 
-			_myRenderer.material.SetTextureOffset ("_MainTex", offset);
-			_myRenderer.material.SetTextureScale ("_MainTex", _size);
+			_myRenderer.material.SetTextureOffset("_UnlitColorMap", offset);
+			_myRenderer.material.SetTextureScale("_UnlitColorMap", _size);
 
 			_lastIndex = index;
 		}

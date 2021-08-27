@@ -5,14 +5,14 @@ using DG.Tweening;
 
 public class Plates : BasicObj
 {
-    private List<GameObject> Foods;
+    public List<GameObject> Foods = new List<GameObject>();
 
-    private void Awake()
+
+    private void FixedUpdate()
     {
-        Foods = new List<GameObject>();
+        PlateUpdate();
     }
-
-    private void Update()
+    private void PlateUpdate()
     {
         if (Foods.Count > 0)
         {
@@ -23,27 +23,17 @@ public class Plates : BasicObj
                     Foods[i].transform.parent = null;
                     Foods.Remove(Foods[i]);
                 }
-                /*Ray ray = new Ray(Foods[i].transform.position, -Foods[i].transform.up);
-                RaycastHit hit;
-                if (!Physics.Raycast(ray, out hit, Mathf.Infinity, LayerMask.GetMask("Plate")))
+                else if(Foods[i].transform.parent != this.transform)
                 {
-                    Foods[i].transform.parent = null;
                     Foods.Remove(Foods[i]);
-                }*/
+                }
             }
         }
     }
 
     public override void PickObjs()
     {
-        //base.PickObjs();
-        this.GetComponent<Rigidbody>().isKinematic = true;
-        this.transform.DOMove(MC.transform.GetChild(0).position, 0.1f).
-                        OnComplete(() => {
-                            MC.PickObj = this.transform.gameObject;
-                            this.transform.parent = MC.transform;
-                        });
-        //this.transform.DOLocalRotate(new Vector3(90, -90, 0), 0.1f);
+        base.PickObjs();
         MC.ChangeState(MouseControl.State.HasPlate);
     }
 
@@ -51,6 +41,7 @@ public class Plates : BasicObj
     {
         Obj.transform.DOMove(this.transform.GetChild(0).position, 0.1f).
             OnComplete(()=> {
+                Obj.layer = LayerMask.NameToLayer("Foods");
                 Obj.transform.parent = this.transform;
                 Foods.Add(Obj);
             });
@@ -69,4 +60,25 @@ public class Plates : BasicObj
             });
         MC.ChangeState(MouseControl.State.Nothing);
     }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.layer==LayerMask.NameToLayer("Foods") || collision.gameObject.layer == LayerMask.NameToLayer("CutFoods"))
+        {
+            if(!Foods.Contains(collision.gameObject))
+            {
+                collision.transform.parent = this.transform;
+                Foods.Add(collision.gameObject);
+            }
+        }
+    }
+
+    /*private void OnCollisionExit(Collision collision)
+    {
+        if(Foods.Contains(collision.gameObject))
+        {
+            collision.transform.parent = null;
+            Foods.Remove(collision.gameObject);
+        }
+    }*/
 }
